@@ -10,6 +10,8 @@ use std::sync::Mutex;
 use tauri_plugin_store::StoreExt;
 use unicode_normalization::UnicodeNormalization;
 
+mod schema;
+
 const CUSTOM_SCENES_MAX_COUNT: usize = 100;
 const SCENE_ID_MAX_CHARS: usize = 120;
 const SCENE_SOURCE_MAX_CHARS: usize = 24;
@@ -1329,33 +1331,7 @@ pub struct HistoryStore {
 impl HistoryStore {
     pub fn new(db_path: PathBuf) -> Result<Self> {
         let conn = Connection::open(&db_path)?;
-        conn.execute_batch("PRAGMA journal_mode=WAL;")?;
-        conn.execute_batch(
-            "CREATE TABLE IF NOT EXISTS history (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                created_at TEXT NOT NULL,
-                app_name TEXT NOT NULL DEFAULT '',
-                app_type TEXT NOT NULL DEFAULT '',
-                context_profile_id TEXT NOT NULL DEFAULT 'general.native',
-                context_label TEXT NOT NULL DEFAULT 'General',
-                context_icon_key TEXT NOT NULL DEFAULT 'general',
-                context_family TEXT NOT NULL DEFAULT 'general',
-                browser_access_status TEXT,
-                provider_kind TEXT NOT NULL DEFAULT 'local',
-                raw_text TEXT NOT NULL DEFAULT '',
-                polished_text TEXT NOT NULL DEFAULT '',
-                language TEXT,
-                duration_ms INTEGER,
-                active_scene_id TEXT,
-                active_scene_source TEXT,
-                active_scene_name TEXT,
-                active_scene_prompt_chars INTEGER,
-                active_scene_prompt_truncated INTEGER NOT NULL DEFAULT 0,
-                output_status TEXT,
-                output_error TEXT
-            );",
-        )?;
-        ensure_history_optional_columns(&conn)?;
+        schema::apply(&conn)?;
         migrate_legacy_history_context(&conn)?;
         Ok(Self {
             conn: Mutex::new(conn),
@@ -1690,71 +1666,6 @@ fn prepare_backup_correction_rules(
     Ok(prepared)
 }
 
-fn ensure_history_optional_columns(conn: &Connection) -> Result<()> {
-    let mut stmt = conn.prepare("PRAGMA table_info(history)")?;
-    let columns = stmt
-        .query_map([], |row| row.get::<_, String>(1))?
-        .collect::<std::result::Result<std::collections::HashSet<_>, _>>()?;
-
-    for (name, ddl) in [
-        ("active_scene_id", "ALTER TABLE history ADD COLUMN active_scene_id TEXT"),
-        (
-            "active_scene_source",
-            "ALTER TABLE history ADD COLUMN active_scene_source TEXT",
-        ),
-        (
-            "active_scene_name",
-            "ALTER TABLE history ADD COLUMN active_scene_name TEXT",
-        ),
-        (
-            "active_scene_prompt_chars",
-            "ALTER TABLE history ADD COLUMN active_scene_prompt_chars INTEGER",
-        ),
-        (
-            "active_scene_prompt_truncated",
-            "ALTER TABLE history ADD COLUMN active_scene_prompt_truncated INTEGER NOT NULL DEFAULT 0",
-        ),
-        (
-            "output_status",
-            "ALTER TABLE history ADD COLUMN output_status TEXT",
-        ),
-        (
-            "output_error",
-            "ALTER TABLE history ADD COLUMN output_error TEXT",
-        ),
-        (
-            "context_profile_id",
-            "ALTER TABLE history ADD COLUMN context_profile_id TEXT NOT NULL DEFAULT 'general.native'",
-        ),
-        (
-            "context_label",
-            "ALTER TABLE history ADD COLUMN context_label TEXT NOT NULL DEFAULT 'General'",
-        ),
-        (
-            "context_icon_key",
-            "ALTER TABLE history ADD COLUMN context_icon_key TEXT NOT NULL DEFAULT 'general'",
-        ),
-        (
-            "context_family",
-            "ALTER TABLE history ADD COLUMN context_family TEXT NOT NULL DEFAULT 'general'",
-        ),
-        (
-            "browser_access_status",
-            "ALTER TABLE history ADD COLUMN browser_access_status TEXT",
-        ),
-        (
-            "provider_kind",
-            "ALTER TABLE history ADD COLUMN provider_kind TEXT NOT NULL DEFAULT 'local'",
-        ),
-    ] {
-        if !columns.contains(name) {
-            conn.execute(ddl, [])?;
-        }
-    }
-
-    Ok(())
-}
-
 fn migrate_legacy_history_context(conn: &Connection) -> Result<()> {
     let registry = AppRegistry::builtin().map_err(anyhow::Error::msg)?;
     let rows = {
@@ -1874,21 +1785,7 @@ pub struct DictionaryStore {
 impl DictionaryStore {
     pub fn new(db_path: PathBuf) -> Result<Self> {
         let conn = Connection::open(&db_path)?;
-        conn.execute_batch("PRAGMA journal_mode=WAL;")?;
-        conn.execute_batch(
-            "CREATE TABLE IF NOT EXISTS dictionary (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                word TEXT NOT NULL,
-                pronunciation TEXT
-            );
-            CREATE TABLE IF NOT EXISTS correction_rules (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                pattern TEXT NOT NULL,
-                replacement TEXT NOT NULL,
-                enabled INTEGER NOT NULL DEFAULT 1,
-                created_at TEXT NOT NULL DEFAULT (datetime('now'))
-            );",
-        )?;
+        schema::apply(&conn)?;
         Ok(Self {
             conn: Mutex::new(conn),
         })
