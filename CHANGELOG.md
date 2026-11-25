@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/), and this project adheres to [Semantic Versioning](https://semver.org/).
 
+## [1.1.65] - 2026-11-25
+
+### Added
+
+- Custom OpenAI-compatible LLM provider with a user-supplied base URL and model, available in Settings and onboarding.
+
 ## [1.1.64] - 2026-11-25
 
 ### Changed
