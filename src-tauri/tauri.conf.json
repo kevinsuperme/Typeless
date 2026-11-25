@@ -1,0 +1,106 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "OpenTypeless",
+  "version": "1.1.64",
+  "identifier": "com.opentypeless.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "macOSPrivateApi": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "OpenTypeless",
+        "width": 900,
+        "height": 700,
+        "minWidth": 720,
+        "minHeight": 480,
+        "resizable": true,
+        "decorations": true,
+        "transparent": false,
+        "alwaysOnTop": false,
+        "skipTaskbar": false,
+        "center": true,
+        "visible": false
+      },
+      {
+        "label": "capsule",
+        "title": "OpenTypeless Capsule",
+        "width": 80,
+        "height": 80,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true,
+        "shadow": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "focus": false,
+        "focusable": false,
+        "visible": false,
+        "visibleOnAllWorkspaces": true,
+        "url": "index.html#capsule"
+      },
+      {
+        "label": "ask",
+        "title": "OpenTypeless Ask",
+        "width": 400,
+        "height": 220,
+        "minWidth": 360,
+        "minHeight": 180,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true,
+        "shadow": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "center": true,
+        "visible": false,
+        "url": "index.html#ask"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.opentypeless.com https://accounts.google.com https://github.com"
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/tover0314-w/opentypeless/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDdBNEFFRjEzN0ZCQTNBMEQKUldRTk9ycC9FKzlLZXVKSFZLNUYxdFZ2Ri9Ya0FRaGsvUEZ1bkJRTDZ6dHZ1emhtZWR6QkprS3kK"
+    },
+    "deep-link": {
+      "desktop": {
+        "schemes": ["opentypeless"]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "createUpdaterArtifacts": true,
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "10.15",
+      "entitlements": "./Entitlements.plist",
+      "infoPlist": "./Info.plist"
+    },
+    "linux": {
+      "appimage": {
+        "files": {
+          ".DirIcon": "icons/icon.png"
+        }
+      }
+    }
+  }
+}
