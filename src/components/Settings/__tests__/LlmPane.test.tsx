@@ -77,6 +77,7 @@ vi.mock('react-i18next', () => ({
         'ask.stopAndAsk': 'Stop and ask',
         'ask.send': 'Ask',
         'providers.llm.doubao': 'Doubao (Volcengine)',
+        'providers.llm.customOpenai': 'Custom OpenAI Compatible',
       }
       return translations[key] || key
     },
@@ -229,6 +230,30 @@ describe('LlmPane', () => {
       expect(mockAppStore.setLlmTestStatus).toHaveBeenCalledWith('idle')
       expect(mockAppStore.setLlmLatencyMs).toHaveBeenCalledWith(null)
       expect(mockAppStore.setLlmModels).toHaveBeenCalledWith([])
+    })
+
+    it('offers a custom OpenAI compatible provider with empty defaults', () => {
+      render(<LlmPane />)
+
+      expect(screen.getByRole('option', { name: 'Custom OpenAI Compatible' })).toBeInTheDocument()
+
+      const providerSelect = screen.getAllByRole('combobox')[0]
+      fireEvent.change(providerSelect, { target: { value: 'custom-openai' } })
+
+      expect(mockAppStore.updateConfig).toHaveBeenCalledWith({
+        llm_provider: 'custom-openai',
+        llm_base_url: '',
+        llm_model: '',
+      })
+    })
+
+    it('uses the OpenAI endpoint as the custom provider placeholder', () => {
+      mockAppStore.config.llm_provider = 'custom-openai'
+      mockAppStore.config.llm_base_url = ''
+      mockAppStore.config.llm_model = ''
+      render(<LlmPane />)
+
+      expect(screen.getByPlaceholderText('https://api.openai.com/v1')).toBeInTheDocument()
     })
   })
 

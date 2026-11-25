@@ -888,6 +888,7 @@
       "claude": "Claude",
       "ollama": "Ollama (local)",
       "openrouter": "OpenRouter",
+      "customOpenai": "OpenAI compatible personalizado",
       "cloud": "Nube de OpenTypeless"
     }
   }

@@ -888,6 +888,7 @@
       "claude": "Claude",
       "ollama": "Ollama (로컬)",
       "openrouter": "OpenRouter",
+      "customOpenai": "사용자 지정 OpenAI 호환",
       "cloud": "OpenTypeless 클라우드"
     }
   }
